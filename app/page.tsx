@@ -1,4 +1,3 @@
-import AdVideoPlayer from "@/components/ad-video-player"
 import AdSlider from "@/components/ad-slider"
 
 export default function Home() {
@@ -23,8 +22,6 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between">
       <div className="w-full">
-        {/* Choose one of the components to display */}
-        {/* <AdVideoPlayer ads={ads} /> */}
         <AdSlider ads={ads} />
       </div>
     </main>

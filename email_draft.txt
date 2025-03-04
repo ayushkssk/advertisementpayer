@@ -1,0 +1,37 @@
+Subject: Application for Full-Stack Developer Internship - Ayush Kumar
+
+Dear Varun,
+
+I am writing to apply for the Full-Stack Developer Internship position at GrowEasy. I have completed the assignment as per the requirements and would like to submit my work for your review.
+
+Project Details:
+- I have created an advertisement slider with smooth transitions and animations as shown in the reference video
+- The project is built using Next.js and GSAP for animations
+- Features include auto-scrolling, play/pause functionality, and bidirectional scrolling with loop capability
+- The code is structured in a modular and maintainable way with proper TypeScript typing
+
+Links:
+- GitHub Repository: https://github.com/ayushkssk/advertisementpayer
+- Deployed URL: https://ayushkssk.github.io/advertisementpayer/
+- LinkedIn Profile: https://linkedin.com/in/ayushkssk
+
+Technical Implementation:
+1. Used GSAP ScrollTrigger for smooth animations
+2. Implemented responsive design that works on all screen sizes
+3. Created modular components with clean separation of concerns
+4. Added interactive controls for user engagement
+5. Structured the ad data in a reusable JSON format
+
+About Me:
+I am Ayush Kumar, a full-stack developer with experience in React, Next.js, and various frontend and backend technologies. I am the founder of IT4B.in and have worked on multiple projects involving UI animations and interactive experiences. I am passionate about creating seamless and visually stunning user experiences.
+
+I am excited about the opportunity to join GrowEasy and contribute to your team. I am available for immediate joining and look forward to discussing my application further.
+
+Thank you for considering my application.
+
+Best regards,
+Ayush Kumar
+Mobile: 7766866355
+Email: ayushkssk@gmail.com
+GitHub: github.com/ayushkssk
+Portfolio: profile.it4b.in

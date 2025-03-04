@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import Image from "next/image"
@@ -50,27 +50,24 @@ export default function AdSlider({ ads }: AdSliderProps) {
   }, [])
 
   // Auto-scroll function
-  const startAutoScroll = () => {
-    if (autoScrollTimerRef.current) {
-      clearInterval(autoScrollTimerRef.current)
-    }
+  const startAutoScroll = useCallback(() => {
+    stopAutoScroll()
     
     autoScrollTimerRef.current = setInterval(() => {
       if (!isScrolling) {
         handleScroll(autoScrollDirection, activeAdIndex)
       }
     }, 4000) // Change image every 4 seconds
-  }
-  
+  }, [autoScrollDirection, activeAdIndex, isScrolling])
+
   // Stop auto-scroll
-  const stopAutoScroll = () => {
+  const stopAutoScroll = useCallback(() => {
     if (autoScrollTimerRef.current) {
       clearInterval(autoScrollTimerRef.current)
       autoScrollTimerRef.current = null
     }
-  }
-  
-  // Toggle auto-scroll
+  }, [])
+
   const toggleAutoScroll = () => {
     setIsAutoScrolling(prev => !prev)
   }
@@ -85,15 +82,14 @@ export default function AdSlider({ ads }: AdSliderProps) {
     } else {
       stopAutoScroll()
     }
-    
-    // Clean up on component unmount
+
     return () => {
       stopAutoScroll()
     }
-  }, [isAutoScrolling, autoScrollDirection, activeAdIndex])
+  }, [isAutoScrolling, startAutoScroll, stopAutoScroll])
 
   // Function to handle image change on scroll
-  const handleScroll = (direction: 'up' | 'down', adIndex: number) => {
+  const handleScroll = useCallback((direction: 'up' | 'down', adIndex: number) => {
     if (isScrolling) return
     
     // Set scrolling state and direction
@@ -122,7 +118,7 @@ export default function AdSlider({ ads }: AdSliderProps) {
         setIsScrolling(false)
       }, 600)
     }, 150)
-  }
+  }, [ads, isScrolling])
 
   useEffect(() => {
     // Make sure we're in the browser environment
@@ -245,40 +241,52 @@ export default function AdSlider({ ads }: AdSliderProps) {
     
     window.addEventListener('wheel', handleWheel, { passive: false })
 
-    // Add touch event listeners for image navigation
+    // Handle touch events for mobile swipe
     const handleTouchStart = (e: TouchEvent) => {
       setTouchStartX(e.touches[0].clientX)
     }
-
+    
     const handleTouchMove = (e: TouchEvent) => {
-      setTouchMoveX(e.touches[0].clientX)
+      if (touchStartX !== null) {
+        setTouchMoveX(e.touches[0].clientX)
+      }
     }
-
+    
     const handleTouchEnd = () => {
       if (touchStartX !== null && touchMoveX !== null) {
-        const diff = touchMoveX - touchStartX
-        if (Math.abs(diff) > 50) {
-          handleScroll(diff > 0 ? 'up' : 'down', activeAdIndex)
+        const diff = touchStartX - touchMoveX
+        
+        if (Math.abs(diff) > 50) { // Minimum swipe distance
+          if (diff > 0) {
+            // Swipe left - next image
+            handleScroll('down', activeAdIndex)
+          } else {
+            // Swipe right - previous image
+            handleScroll('up', activeAdIndex)
+          }
         }
       }
+      
+      // Reset touch coordinates
       setTouchStartX(null)
       setTouchMoveX(null)
     }
-
-    slider.addEventListener('touchstart', handleTouchStart)
-    slider.addEventListener('touchmove', handleTouchMove)
-    slider.addEventListener('touchend', handleTouchEnd)
-
-    // Clean up ScrollTrigger on component unmount
+    
+    // Add touch event listeners
+    document.addEventListener('touchstart', handleTouchStart)
+    document.addEventListener('touchmove', handleTouchMove)
+    document.addEventListener('touchend', handleTouchEnd)
+    
     return () => {
+      // Remove touch event listeners on cleanup
+      document.removeEventListener('touchstart', handleTouchStart)
+      document.removeEventListener('touchmove', handleTouchMove)
+      document.removeEventListener('touchend', handleTouchEnd)
       ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('wheel', handleWheel)
-      slider.removeEventListener('touchstart', handleTouchStart)
-      slider.removeEventListener('touchmove', handleTouchMove)
-      slider.removeEventListener('touchend', handleTouchEnd)
     }
-  }, [ads.length, activeAdIndex, isScrolling])
+  }, [ads.length, activeAdIndex, handleScroll, isScrolling, isAutoScrolling, touchStartX, touchMoveX])
 
   // Function to handle image change via indicator click
   const handleImageChange = (adIndex: number, imgIndex: number) => {
