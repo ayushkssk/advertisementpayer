@@ -12,7 +12,7 @@ Project Details:
 
 Links:
 - GitHub Repository: https://github.com/ayushkssk/advertisementpayer
-- Deployed URL: https://ayushkssk.github.io/advertisementpayer/
+- Deployed URL: https://advertisementpayer.netlify.app
 - LinkedIn Profile: https://linkedin.com/in/ayushkssk
 
 Technical Implementation:
