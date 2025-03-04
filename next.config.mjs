@@ -1,16 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  swcMinify: false,
-  transpilePackages: [],
-  experimental: {
-    forceSwcTransforms: false
-  },
+  output: 'export',
+  basePath: process.env.NODE_ENV === 'production' ? '/advertisementpayer' : '',
   images: {
+    unoptimized: true,
     domains: ['images.unsplash.com', 'placehold.co'],
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-  }
+  },
 };
 
 export default nextConfig;
