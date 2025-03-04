@@ -36,6 +36,7 @@ export default function AdSlider({ ads }: AdSliderProps) {
   const [transitionDirection, setTransitionDirection] = useState<'up' | 'down'>('down')
   const [showScrollTip, setShowScrollTip] = useState(true)
   const [isAutoScrolling, setIsAutoScrolling] = useState(true)
+  const [autoScrollDirection, setAutoScrollDirection] = useState<'up' | 'down'>('down')
   const [touchStartX, setTouchStartX] = useState<number | null>(null)
   const [touchMoveX, setTouchMoveX] = useState<number | null>(null)
 
@@ -56,7 +57,7 @@ export default function AdSlider({ ads }: AdSliderProps) {
     
     autoScrollTimerRef.current = setInterval(() => {
       if (!isScrolling) {
-        handleScroll('down', activeAdIndex)
+        handleScroll(autoScrollDirection, activeAdIndex)
       }
     }, 4000) // Change image every 4 seconds
   }
@@ -73,8 +74,11 @@ export default function AdSlider({ ads }: AdSliderProps) {
   const toggleAutoScroll = () => {
     setIsAutoScrolling(prev => !prev)
   }
-  
-  // Start or stop auto-scroll based on isAutoScrolling state
+
+  const toggleScrollDirection = () => {
+    setAutoScrollDirection(prev => prev === 'up' ? 'down' : 'up')
+  }
+
   useEffect(() => {
     if (isAutoScrolling) {
       startAutoScroll()
@@ -86,7 +90,7 @@ export default function AdSlider({ ads }: AdSliderProps) {
     return () => {
       stopAutoScroll()
     }
-  }, [isAutoScrolling, activeAdIndex, isScrolling])
+  }, [isAutoScrolling, autoScrollDirection, activeAdIndex])
 
   // Function to handle image change on scroll
   const handleScroll = (direction: 'up' | 'down', adIndex: number) => {
@@ -103,10 +107,10 @@ export default function AdSlider({ ads }: AdSliderProps) {
         const currentAd = ads[adIndex]
         
         if (direction === 'down') {
-          // Next image
+          // Next image with loop
           newIndices[adIndex] = (newIndices[adIndex] + 1) % currentAd.images.length
         } else {
-          // Previous image
+          // Previous image with loop
           newIndices[adIndex] = (newIndices[adIndex] - 1 + currentAd.images.length) % currentAd.images.length
         }
         
@@ -165,6 +169,28 @@ export default function AdSlider({ ads }: AdSliderProps) {
       ease: "power1.inOut",
     })
     
+    // Auto horizontal scrolling
+    const autoHorizontalScroll = () => {
+      const mainScroll = ScrollTrigger.getById('mainScroll')
+      if (mainScroll && isAutoScrolling) {
+        const currentProgress = mainScroll.progress
+        let newProgress = currentProgress + 0.005 // Small increment for smooth scrolling
+        
+        // Loop back to start when reaching the end
+        if (newProgress >= 1) {
+          newProgress = 0
+        }
+        
+        mainScroll.scroll(newProgress * (sliderWidth - containerWidth))
+        requestAnimationFrame(autoHorizontalScroll)
+      }
+    }
+    
+    // Start auto horizontal scrolling if auto-scrolling is enabled
+    if (isAutoScrolling) {
+      requestAnimationFrame(autoHorizontalScroll)
+    }
+
     // Add keyboard navigation
     const handleKeyDown = (e: KeyboardEvent) => {
       if (ScrollTrigger.isInViewport(container)) {
@@ -277,6 +303,36 @@ export default function AdSlider({ ads }: AdSliderProps) {
     }, 150)
   }
 
+  // Add navigation buttons for horizontal scrolling
+  const goToNextAd = () => {
+    if (activeAdIndex < ads.length - 1) {
+      const mainScroll = ScrollTrigger.getById('mainScroll')
+      if (mainScroll) {
+        const newProgress = (activeAdIndex + 1) / ads.length
+        mainScroll.scroll(newProgress * (sliderRef.current?.scrollWidth || 0 - containerRef.current?.offsetWidth || 0))
+      }
+    }
+  }
+
+  const goToPrevAd = () => {
+    if (activeAdIndex > 0) {
+      const mainScroll = ScrollTrigger.getById('mainScroll')
+      if (mainScroll) {
+        const newProgress = (activeAdIndex - 1) / ads.length
+        mainScroll.scroll(newProgress * (sliderRef.current?.scrollWidth || 0 - containerRef.current?.offsetWidth || 0))
+      }
+    }
+  }
+
+  // Add vertical scroll controls
+  const scrollUp = () => {
+    handleScroll('up', activeAdIndex);
+  };
+
+  const scrollDown = () => {
+    handleScroll('down', activeAdIndex);
+  };
+
   return (
     <div ref={containerRef} className="w-full h-screen overflow-hidden bg-gradient-to-br from-white to-gray-100">
       <div 
@@ -288,6 +344,10 @@ export default function AdSlider({ ads }: AdSliderProps) {
           <div 
             key={ad.id} 
             className="ad-section w-screen h-full flex flex-row-reverse p-0"
+            style={{ 
+              transform: `translateX(${adIndex === activeAdIndex ? '0' : adIndex < activeAdIndex ? '-100%' : '100%'})`,
+              transition: 'transform 0.5s ease-in-out'
+            }}
           >
             {/* Right side - Image gallery */}
             <div className="w-full md:w-2/3 h-full relative flex items-center justify-center p-8 overflow-hidden">
@@ -439,8 +499,13 @@ export default function AdSlider({ ads }: AdSliderProps) {
         ))}
       </div>
       
+      {/* Navigation buttons */}
+      <div className="absolute bottom-4 left-4 z-20 flex items-center gap-4">
+        {/* Navigation buttons removed as only one ad is present */}
+      </div>
+      
       {/* Auto-scroll controls */}
-      <div className="absolute bottom-4 left-4 z-20">
+      <div className="absolute bottom-4 right-4 z-20 flex items-center gap-2">
         <button 
           className="bg-white/30 backdrop-blur-sm p-2 rounded-full hover:bg-white/50 transition-all"
           onClick={toggleAutoScroll}
@@ -448,9 +513,14 @@ export default function AdSlider({ ads }: AdSliderProps) {
         >
           {isAutoScrolling ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
         </button>
+        <button 
+          className="bg-white/30 backdrop-blur-sm p-2 rounded-full hover:bg-white/50 transition-all"
+          onClick={toggleScrollDirection}
+          aria-label={autoScrollDirection === 'up' ? "Switch to down" : "Switch to up"}
+        >
+          {autoScrollDirection === 'up' ? <ChevronRight className="h-6 w-6 -rotate-90" /> : <ChevronRight className="h-6 w-6 rotate-90" />}
+        </button>
       </div>
-      
-      {/* Navigation instructions removed as requested */}
     </div>
   )
 }
