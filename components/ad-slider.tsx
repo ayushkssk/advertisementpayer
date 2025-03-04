@@ -309,7 +309,9 @@ export default function AdSlider({ ads }: AdSliderProps) {
       const mainScroll = ScrollTrigger.getById('mainScroll')
       if (mainScroll) {
         const newProgress = (activeAdIndex + 1) / ads.length
-        mainScroll.scroll(newProgress * (sliderRef.current?.scrollWidth || 0 - containerRef.current?.offsetWidth || 0))
+        const sliderWidth = sliderRef.current?.scrollWidth || 0
+        const containerWidth = containerRef.current?.offsetWidth || 0
+        mainScroll.scroll(newProgress * (sliderWidth - containerWidth))
       }
     }
   }
@@ -319,7 +321,9 @@ export default function AdSlider({ ads }: AdSliderProps) {
       const mainScroll = ScrollTrigger.getById('mainScroll')
       if (mainScroll) {
         const newProgress = (activeAdIndex - 1) / ads.length
-        mainScroll.scroll(newProgress * (sliderRef.current?.scrollWidth || 0 - containerRef.current?.offsetWidth || 0))
+        const sliderWidth = sliderRef.current?.scrollWidth || 0
+        const containerWidth = containerRef.current?.offsetWidth || 0
+        mainScroll.scroll(newProgress * (sliderWidth - containerWidth))
       }
     }
   }
